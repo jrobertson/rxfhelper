@@ -22,7 +22,7 @@ class RXFHelper
     elsif x[/https?:\/\//] then
       open(x, 'UserAgent' => 'RXFHelper').read  
     else
-      File.open(s, 'r').read
+      File.open(x, 'r').read
     end
   end
 
