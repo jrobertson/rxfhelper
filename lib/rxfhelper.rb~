@@ -8,7 +8,15 @@ require 'open-uri'
 #
 class RXFHelper
 
-  def self.read(x)   
+  attr_reader :to_s
+
+  def initialize(x)
+    @to_s = read x
+  end
+
+  private
+
+  def read(x)   
     if x.strip[/^</] then
       x
     elsif x[/https?:\/\//] then
@@ -18,4 +26,5 @@ class RXFHelper
     end
   end
 
+  alias to_xml to_s
 end
