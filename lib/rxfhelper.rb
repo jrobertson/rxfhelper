@@ -10,11 +10,11 @@ class RXFHelper
 
   def self.read(x)   
     if x.strip[/^</] then
-      x
+      [x, :xml]
     elsif x[/https?:\/\//] then
-      open(x, 'UserAgent' => 'RXFHelper').read  
+      [open(x, 'UserAgent' => 'RXFHelper').read, :url]
     else
-      File.open(x, 'r').read
+      [File.open(x, 'r').read, :file]
     end
   end
 
