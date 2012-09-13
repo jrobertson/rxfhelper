@@ -6,10 +6,6 @@ require 'open-uri'
 
 # Read XML File Helper
 #
-require 'open-uri'
-
-# Read XML File Helper
-#
 class RXFHelper
 
   def self.read(x)   
