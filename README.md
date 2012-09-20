@@ -1,12 +1,30 @@
-#Introducing the rxfhelper gem
+#Introducing the Leetpassword gem
 
-RXFHelper.read accepts a string containing a URL, a file location, or just a plain string and returns the contents of the location otherwise it just returns the string.
+This gem is for people like myself who have trouble remembering their long highly secure password, and need something a little simpler to remember.
 
-e.g.
+    # by default, the characters e, i, and o are replaced 
+    #   with their leet equivalanet
 
-    require 'rxfhelper'
+    LeetPassword.generate #=> f1sh3agl3
+    LeetPassword.generate #=> st3n0p3lmatus
+    LeetPassword.generate #=> n1mravus
 
-    #location = 'http://jamesrobertson.eu/index.html'
-    location = '/home/james/index.html'
-    #location = '<html><head><title>index</title></head><body><p>test</p></body></html>'
-    RXFHelper.read(location)
+
+    # generate a password with a maximum of 8 characters
+    LeetPassword.generate(8) #=> p3rus1ng
+    LeetPassword.generate(8) #=> vagab0nd
+    LeetPassword.generate(8) #=> sulaw3s1
+
+
+    # generate a password with a maximum of 8 characters and
+    #   use a custom leet character map
+
+    LeetPassword.generate(12, {o: '0', a: '4'}) #=> ur0ch0rd
+    LeetPassword.generate(12, {o: '0', a: '4'}) #=> s4rc0ph4g4
+    LeetPassword.generate(12, {o: '0', a: '4'}) #=> b4udel4ire
+
+## Resources   
+
+* [pezra/random-word ?? GitHub](https://github.com/pezra/random-word)
+* [leetpassword](http://rubygems.org/gems/leetpassword)
+
