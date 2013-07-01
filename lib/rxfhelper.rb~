@@ -13,8 +13,10 @@ class RXFHelper
       [x, :xml]
     elsif x[/https?:\/\//] then
       [open(x, 'UserAgent' => 'RXFHelper').read, :url]
+    elsif x[/^file:\/\//] or File.exists?(x) then
+      [File.open(x.sub(%r{^file://}, ''), 'r').read, :file]
     else
-      [File.open(x, 'r').read, :file]
+      [nil, :relative_url]
     end
   end
 
