@@ -9,6 +9,7 @@ require 'open-uri'
 class RXFHelper
 
   def self.read(x)   
+    
     if x.strip[/^</] then
       [x, :xml]
     elsif x[/https?:\/\//] then
@@ -20,4 +21,18 @@ class RXFHelper
     end
   end
 
+  def self.absolute_url(page_url, item_location)
+
+    case item_location
+
+      when /^\//
+        File.join page_url[/https?:\/\/[^\/]+/], item_location
+
+      when /^http/
+        item_location
+
+      else
+        File.join page_url[/.*\//], item_location
+    end
+  end  
 end
