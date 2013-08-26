@@ -4,6 +4,14 @@
 
 require 'open-uri'
 
+class URL
+
+  def self.join(*a)
+    a.map {|x| x.sub(/(?:^\/|\/$)/,'') }.join '/'
+  end
+end
+
+
 # Read XML File Helper
 #
 class RXFHelper
@@ -26,7 +34,7 @@ class RXFHelper
     case item_location
 
       when /^\//
-        File.join page_url[/https?:\/\/[^\/]+/], item_location
+        URL.join page_url[/https?:\/\/[^\/]+/], item_location
 
       when /^http/
         item_location
