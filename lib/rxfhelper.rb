@@ -25,7 +25,7 @@ class RXFHelper
     elsif x[/^file:\/\//] or File.exists?(x) then
       [File.expand_path(File.read(x.sub(%r{^file://}, ''))), :file]
     else
-      [nil, :relative_url]
+      [x, :unknown]
     end
   end
 
