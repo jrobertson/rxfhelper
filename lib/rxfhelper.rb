@@ -19,11 +19,17 @@ class RXFHelper
   def self.read(x)   
     
     if x.strip[/^</] then
+      
       [x, :xml]
-    elsif x[/https?:\/\//] then
-      [open(x, 'UserAgent' => 'RXFHelper'){|x| x.read}, :url]
-    elsif x[/^file:\/\//] or File.exists?(x) then
-      [File.read(File.expand_path(x.sub(%r{^file://}, ''))), :file]
+      
+    elsif x.lines.length == 1 then
+      
+      if x.strip[/^https?:\/\//] then
+        [open(x, 'UserAgent' => 'RXFHelper'){|x| x.read}, :url]
+      elsif x[/^file:\/\//] or File.exists?(x) then
+        [File.read(File.expand_path(x.sub(%r{^file://}, ''))), :file]
+      end
+      
     else
       [x, :unknown]
     end
