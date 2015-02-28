@@ -16,7 +16,7 @@ end
 #
 class RXFHelper
 
-  def self.read(x)   
+  def self.read(x, opt={})   
     
     if x.strip[/^</] then
       
@@ -25,7 +25,10 @@ class RXFHelper
     elsif x.lines.length == 1 then
       
       if x.strip[/^https?:\/\//] then
-        [open(x, 'UserAgent' => 'RXFHelper'){|x| x.read}, :url]
+
+        [open(x, 'UserAgent' => 'RXFHelper',\
+          http_basic_authentication: [opt[:username], opt[:password]]).read, :url]
+
       elsif x[/^file:\/\//] or File.exists?(x) then
         [File.read(File.expand_path(x.sub(%r{^file://}, ''))), :file]
       end
