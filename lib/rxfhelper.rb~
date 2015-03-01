@@ -17,7 +17,7 @@ end
 class RXFHelper
 
   def self.read(x, opt={})   
-    
+
     if x.strip[/^</] then
       
       [x, :xml]
@@ -31,9 +31,12 @@ class RXFHelper
 
       elsif x[/^file:\/\//] or File.exists?(x) then
         [File.read(File.expand_path(x.sub(%r{^file://}, ''))), :file]
+      else
+        [x, :unknown]
       end
       
     else
+
       [x, :unknown]
     end
   end

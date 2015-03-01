@@ -2,7 +2,7 @@
 
 # file: rxfhelper.rb
 
-require 'open-uri'
+require 'gpd-request'
 
 class URL
 
@@ -26,8 +26,7 @@ class RXFHelper
       
       if x.strip[/^https?:\/\//] then
 
-        [open(x, 'UserAgent' => 'RXFHelper',\
-          http_basic_authentication: [opt[:username], opt[:password]]).read, :url]
+        GPDRequest.new(opt[:username], opt[:password]).get(x).body
 
       elsif x[/^file:\/\//] or File.exists?(x) then
         [File.read(File.expand_path(x.sub(%r{^file://}, ''))), :file]
