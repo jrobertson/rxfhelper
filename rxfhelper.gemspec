@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'rxfhelper'
-  s.version = '0.2.0'
+  s.version = '0.2.2'
   s.summary = 'rxfhelper'
   s.authors = ['James Robertson']
   s.files = Dir['lib/**/*.rb']

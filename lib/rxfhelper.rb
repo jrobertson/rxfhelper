@@ -25,8 +25,10 @@ class RXFHelper
     elsif x.lines.length == 1 then
       
       if x.strip[/^https?:\/\//] then
-
-        GPDRequest.new(opt[:username], opt[:password]).get(x).body
+        
+        r = GPDRequest.new(opt[:username], opt[:password]).get(x)
+        raise("RXFHelper: 404 %s not found" % x)  if r.code == '404'
+        [r.body, :url]
 
       elsif x[/^file:\/\//] or File.exists?(x) then
         [File.read(File.expand_path(x.sub(%r{^file://}, ''))), :file]
