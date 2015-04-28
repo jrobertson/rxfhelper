@@ -18,7 +18,7 @@ class RXFHelper
 
   def self.read(x, opt={})   
 
-    if x.strip[/^</] then
+    if x.strip[/^<(\?xml|[^\?])/] then
       
       [x, :xml]
       
