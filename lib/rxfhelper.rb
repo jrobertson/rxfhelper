@@ -18,13 +18,18 @@ class RXFHelper
 
   def self.read(x, opt={})   
 
-    if x.strip[/^<(\?xml|[^\?])/] then
+
+    if x.is_a? Rexle then
+      
+      [x.xml, :rexle]
+      
+    elsif x.strip[/^<(\?xml|[^\?])/] then
       
       [x, :xml]
       
     elsif x.lines.length == 1 then
       
-      if x.strip[/^https?:\/\//] then
+      if x[/\bhttps?:\/\//] then
         
         r = GPDRequest.new(opt[:username], opt[:password]).get(x)
         raise("RXFHelper: 404 %s not found" % x)  if r.code == '404'
