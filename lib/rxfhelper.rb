@@ -19,7 +19,7 @@ class RXFHelper
   def self.read(x, opt={})   
 
 
-    if x.is_a? Rexle then
+    if x.class.to_s =~ /Rexle$/ then
       
       [x.xml, :rexle]
       
