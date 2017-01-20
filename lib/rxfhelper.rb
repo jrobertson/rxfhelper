@@ -12,13 +12,17 @@ class URL
 end
 
 
+class RXFHelperException < Exception
+end
+
 # Read XML File Helper
 #
 class RXFHelper
 
   def self.read(x, opt={})   
 
-
+    raise RXFHelperException, 'nil found, expected a string' if x.nil?
+    
     if x.class.to_s =~ /Rexle$/ then
       
       [x.xml, :rexle]
@@ -37,6 +41,8 @@ class RXFHelper
 
       elsif x[/^file:\/\//] or File.exists?(x) then
         [File.read(File.expand_path(x.sub(%r{^file://}, ''))), :file]
+      elsif x =~ /\s/
+        [x, :text]
       else
         [x, :unknown]
       end

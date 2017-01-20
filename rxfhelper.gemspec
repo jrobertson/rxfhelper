@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'rxfhelper'
-  s.version = '0.4.0'
+  s.version = '0.4.2'
   s.summary = 'Helpful library for primarily reading the contents of a file either from an HTTP address or a local file.'
   s.authors = ['James Robertson']
   s.files = Dir['lib/rxfhelper.rb']
@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.signing_key = '../privatekeys/rxfhelper.pem'
   s.cert_chain  = ['gem-public_cert.pem']
   s.license = 'MIT'
-  s.email = 'james@r0bertson.co.uk'
+  s.email = 'james@jamesrobertson.eu'
   s.homepage = 'https://github.com/jrobertson/rxfhelper'
   s.required_ruby_version = '>= 2.1.2'
 end
