@@ -36,7 +36,14 @@ class RXFHelper
       if x[/\bhttps?:\/\//] then
         
         r = GPDRequest.new(opt[:username], opt[:password]).get(x)
-        raise("RXFHelper: 404 %s not found" % x)  if r.code == '404'
+        
+        case r.code
+        when '404'          
+          raise(RXFHelperException, "404 %s not found" % x)
+        when '401'          
+          raise(RXFHelperException, "401 %s unauthorized access" % x)        
+        end
+        
         [r.body, :url]
 
       elsif x[/^file:\/\//] or File.exists?(x) then
