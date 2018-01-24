@@ -3,6 +3,7 @@
 # file: rxfhelper.rb
 
 require 'gpd-request'
+require 'drb_fileclient'
 
 class URL
 
@@ -45,7 +46,18 @@ class RXFHelper
         end
         
         [r.body, :url]
+        
+      elsif  x[/^dfs:\/\//] then
+        
+        host = x[/(?<=^dfs:\/\/)[^\/:]+/]
+        port = x[/(?<=^dfs:\/\/)[^:]+:(\d+)/,1]  || '61010'
+        filename = x[/(?<=^dfs:\/\/)[^\/]+\/(.*)/,1]
 
+        # read the file using the drb_fileclient
+        file = DRbFileClient.new host: host, port: port
+        
+        [file.read(filename), :dfs]        
+                
       elsif x[/^file:\/\//] or File.exists?(x) then
         [File.read(File.expand_path(x.sub(%r{^file://}, ''))), :file]
       elsif x =~ /\s/
@@ -57,6 +69,24 @@ class RXFHelper
     else
 
       [x, :unknown]
+    end
+  end
+  
+  def self.write(uri, s)
+    
+    case uri
+    when /^dfs:\/\//
+      
+      host = uri[/(?<=^dfs:\/\/)[^\/:]+/]
+      port = uri[/(?<=^dfs:\/\/)[^:]+:(\d+)/,1]  || '61010'
+      filename = uri[/(?<=^dfs:\/\/)[^\/]+\/(.*)/,1]
+
+      # write the file using the drb_fileclient
+      file = DRbFileClient.new host: host, port: port
+      file.write filename, s
+  
+    else
+      File.write(uri, s)
     end
   end
 
