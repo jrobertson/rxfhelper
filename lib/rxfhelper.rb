@@ -89,6 +89,23 @@ class RXFHelper
       File.write(uri, s)
     end
   end
+  
+  def self.writeable?(source)
+
+    return false if source.lines.length > 1
+    
+    if not source =~ /:\/\// then
+      
+      return true if File.exists? source
+      
+    else
+      
+      return true if source =~ /^dfs:/
+      
+    end
+    
+    return false
+  end  
 
   def self.absolute_url(page_url, item_location)
 
