@@ -101,7 +101,7 @@ class RXFHelper
       file.write filename, s
       
     when /^rse:\/\//
-      RSC.new.post(uri)
+      RSC.new.post(uri, s)
     else
       File.write(uri, s)
     end
@@ -139,14 +139,14 @@ class RXFHelper
     end
   end  
   
-  def self.post(x)   
+  def self.post(uri, x=nil)   
 
-    raise RXFHelperException, 'nil found, expected a string' if x.nil?    
+    raise RXFHelperException, 'nil found, expected a string' if uri.nil?    
           
-    if x[/^rse:\/\//] then
-      RSC.new.post x
+    if uri[/^rse:\/\//] then
+      RSC.new.post uri, x
     else
-      [x, :unknown]
+      [uri, :unknown]
     end
 
   end  
