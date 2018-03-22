@@ -1,10 +1,11 @@
 Gem::Specification.new do |s|
   s.name = 'rxfhelper'
-  s.version = '0.5.1'
+  s.version = '0.6.0'
   s.summary = 'Helpful library for primarily reading the contents of a ' + 
       'file either from an HTTP address, local file, or DRb file system.'
   s.authors = ['James Robertson']
   s.files = Dir['lib/rxfhelper.rb']
+  s.add_runtime_dependency('rsc', '~> 0.3', '>=0.3.1')
   s.add_runtime_dependency('gpd-request', '~> 0.3', '>=0.3.0')
   s.add_runtime_dependency('drb_fileclient', '~> 0.1', '>=0.1.1')
   s.signing_key = '../privatekeys/rxfhelper.pem'

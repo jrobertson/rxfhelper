@@ -2,6 +2,7 @@
 
 # file: rxfhelper.rb
 
+require 'rsc'
 require 'gpd-request'
 require 'drb_fileclient'
 
@@ -19,6 +20,18 @@ end
 # Read XML File Helper
 #
 class RXFHelper
+  
+  def self.get(x)   
+
+    raise RXFHelperException, 'nil found, expected a string' if x.nil?    
+          
+    if x[/^rse:\/\//] then
+      RSC.new.get x
+    else
+      [x, :unknown]
+    end
+
+  end    
 
   def self.read(x, opt={})   
 
@@ -58,6 +71,8 @@ class RXFHelper
         
         [file.read(filename), :dfs]        
                 
+      elsif x[/^rse:\/\//] then
+         [RSC.new.get(x), :rse]
       elsif x[/^file:\/\//] or File.exists?(x) then
         [File.read(File.expand_path(x.sub(%r{^file://}, ''))), :file]
       elsif x =~ /\s/
@@ -72,7 +87,7 @@ class RXFHelper
     end
   end
   
-  def self.write(uri, s)
+  def self.write(uri, s=nil)
     
     case uri
     when /^dfs:\/\//
@@ -84,7 +99,9 @@ class RXFHelper
       # write the file using the drb_fileclient
       file = DRbFileClient.new host: host, port: port
       file.write filename, s
-  
+      
+    when /^rse:\/\//
+      RSC.new.post(uri)
     else
       File.write(uri, s)
     end
@@ -120,5 +137,17 @@ class RXFHelper
       else
         File.join page_url[/.*\//], item_location
     end
+  end  
+  
+  def self.post(x)   
+
+    raise RXFHelperException, 'nil found, expected a string' if x.nil?    
+          
+    if x[/^rse:\/\//] then
+      RSC.new.post x
+    else
+      [x, :unknown]
+    end
+
   end  
 end
