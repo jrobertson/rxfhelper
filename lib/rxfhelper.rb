@@ -6,6 +6,60 @@ require 'rsc'
 require 'gpd-request'
 require 'drb_fileclient'
 
+
+module RXFHelperModule
+  
+  class FileX
+    
+    def self.exists?(filename)
+      
+      type = self.filetype(filename)
+      
+      filex = case type
+      when :file
+        File
+      when :dfs
+        DfsFile
+      else
+        nil
+      end
+
+      return nil unless filex
+      
+      filex.exists? filename
+      
+    end
+    
+    def self.filetype(x)
+      
+      return :string if x.lines.length > 1
+      
+      case x
+      when /^rse:\/\//
+        :rse
+      when /^https?:\/\//
+        :http
+      when /^dfs:\/\//
+        :dfs        
+      when /^file:\/\//
+        :file
+      else
+        
+        if File.exists?(x) then
+          :file
+        else
+          :text
+        end
+        
+      end
+    end
+    
+    def self.read(x)      RXFHelper.read(x).first  end
+    def self.write(x, s)  RXFHelper.write(x, s)    end      
+    
+  end
+end
+
 class URL
 
   def self.join(*a)
@@ -20,6 +74,7 @@ end
 # Read XML File Helper
 #
 class RXFHelper
+  
   
   def self.get(x)   
 
@@ -62,14 +117,7 @@ class RXFHelper
         
       elsif  x[/^dfs:\/\//] then
         
-        host = x[/(?<=^dfs:\/\/)[^\/:]+/]
-        port = x[/(?<=^dfs:\/\/)[^:]+:(\d+)/,1]  || '61010'
-        filename = x[/(?<=^dfs:\/\/)[^\/]+\/(.*)/,1]
-
-        # read the file using the drb_fileclient
-        file = DRbFileClient.new host: host, port: port
-        
-        [file.read(filename), :dfs]        
+        [DfsFile.read(x), :dfs]        
                 
       elsif x[/^rse:\/\//] then
          [RSC.new.get(x), :rse]
@@ -92,13 +140,7 @@ class RXFHelper
     case uri
     when /^dfs:\/\//
       
-      host = uri[/(?<=^dfs:\/\/)[^\/:]+/]
-      port = uri[/(?<=^dfs:\/\/)[^:]+:(\d+)/,1]  || '61010'
-      filename = uri[/(?<=^dfs:\/\/)[^\/]+\/(.*)/,1]
-
-      # write the file using the drb_fileclient
-      file = DRbFileClient.new host: host, port: port
-      file.write filename, s
+      DfsFile.write filename, s
       
     when /^rse:\/\//
       RSC.new.post(uri, s)
