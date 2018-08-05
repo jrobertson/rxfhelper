@@ -120,9 +120,26 @@ class RXFHelper
         [DfsFile.read(x), :dfs]        
                 
       elsif x[/^rse:\/\//] then
+        
          [RSC.new.get(x), :rse]
+         
       elsif x[/^file:\/\//] or File.exists?(x) then
-        [File.read(File.expand_path(x.sub(%r{^file://}, ''))), :file]
+        
+        contents = File.read(File.expand_path(x.sub(%r{^file://}, '')))
+        
+        obj = if contents.lines.first =~ /<?dynarex / then
+        
+          dx = Dynarex.new()
+          dx.import contents
+          
+        else
+          
+          contents
+          
+        end
+        
+        [obj, :file]
+        
       elsif x =~ /\s/
         [x, :text]
       else
