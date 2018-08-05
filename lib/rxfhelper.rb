@@ -129,7 +129,7 @@ class RXFHelper
         
         obj = if contents.lines.first =~ /<?dynarex / then
         
-          dx = Dynarex.new()
+          dx = Dynarex.new(debug: opt[:debug])
           dx.import contents
           
         else
