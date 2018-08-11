@@ -10,7 +10,9 @@ require 'drb_fileclient'
 module RXFHelperModule
   
   class FileX
-    
+
+    def self.chdir(s)  RXFHelper.chdir(s)   end
+
     def self.exists?(filename)
       
       type = self.filetype(filename)
@@ -29,7 +31,7 @@ module RXFHelperModule
       filex.exists? filename
       
     end
-    
+
     def self.filetype(x)
       
       return :string if x.lines.length > 1
@@ -53,10 +55,13 @@ module RXFHelperModule
         
       end
     end
-    
+
+    def self.mkdir(s)     RXFHelper.mkdir(s)       end
+    def self.mkdir_p(s)   RXFHelper.mkdir_p(s)     end            
+    def self.pwd()        RXFHelper.pwd()          end    
     def self.read(x)      RXFHelper.read(x).first  end
     def self.write(x, s)  RXFHelper.write(x, s)    end      
-    
+
   end
 end
 
@@ -76,6 +81,16 @@ end
 class RXFHelper
   
   
+  def self.chdir(x)
+    
+    if x[/^file:\/\//] or File.exists?(File.dirname(x)) then
+      FileUtils.chdir x
+    elsif x[/^dfs:\/\//]
+      DfsFile.chdir x
+    end
+    
+  end
+  
   def self.get(x)   
 
     raise RXFHelperException, 'nil found, expected a string' if x.nil?    
@@ -87,8 +102,36 @@ class RXFHelper
     end
 
   end    
-
-  def self.read(x, opt={})   
+  
+  def self.mkdir(x)
+    
+    if x[/^file:\/\//] or File.exists?(File.dirname(x)) then
+      FileUtils.mkdir x
+    elsif x[/^dfs:\/\//]
+      DfsFile.mkdir x
+    end
+    
+  end
+  
+  def self.mkdir_p(x)
+    
+    if x[/^file:\/\//] or File.exists?(File.dirname(x)) then
+      FileUtils.mkdir_p x
+    elsif x[/^dfs:\/\//]
+      DfsFile.mkdir_p x
+    end
+    
+  end
+  
+  def self.pwd()
+    
+    DfsFile.pwd
+    
+  end  
+  
+  def self.read(x, h={})   
+    
+    opt = {debug: false, auto: false}.merge(h)
 
     raise RXFHelperException, 'nil found, expected a string' if x.nil?
     
@@ -125,9 +168,10 @@ class RXFHelper
          
       elsif x[/^file:\/\//] or File.exists?(x) then
         
+        puts 'RXFHelper.read before File.read' if opt[:debug]
         contents = File.read(File.expand_path(x.sub(%r{^file://}, '')))
         
-        obj = if contents.lines.first =~ /<?dynarex / then
+        obj = if (contents.lines.first =~ /<?dynarex /) and opt[:auto] then
         
           dx = Dynarex.new(debug: opt[:debug])
           dx.import contents
@@ -142,6 +186,8 @@ class RXFHelper
         
       elsif x =~ /\s/
         [x, :text]
+      elsif DfsFile.exists?(x)
+        [DfsFile.read(x), :dfs]
       else
         [x, :unknown]
       end
@@ -152,18 +198,27 @@ class RXFHelper
     end
   end
   
-  def self.write(uri, s=nil)
+  def self.write(location, s=nil)
     
-    case uri
+    case location
     when /^dfs:\/\//
       
       DfsFile.write filename, s
       
     when /^rse:\/\//
-      RSC.new.post(uri, s)
+      
+      RSC.new.post(location, s)
+      
     else
-      File.write(uri, s)
+      
+      if DfsFile.exists?(File.dirname(location)) then
+        DfsFile.write location, s
+      else
+        File.write(location, s)
+      end
+      
     end
+    
   end
   
   def self.writeable?(source)
