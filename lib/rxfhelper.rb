@@ -131,8 +131,9 @@ class RXFHelper
   
   def self.read(x, h={})   
     
-    opt = {debug: false, auto: false}.merge(h)
+    opt = {debug: false, auto: true}.merge(h)
 
+    puts 'x: ' + x.inspect if opt[:debug]
     raise RXFHelperException, 'nil found, expected a string' if x.nil?
     
     if x.class.to_s =~ /Rexle$/ then
@@ -171,7 +172,10 @@ class RXFHelper
         puts 'RXFHelper.read before File.read' if opt[:debug]
         contents = File.read(File.expand_path(x.sub(%r{^file://}, '')))
         
-        obj = if (contents.lines.first =~ /<?dynarex /) and opt[:auto] then
+        puts 'contents: ' + contents.inspect if opt[:debug]
+        
+        obj = if (contents.lines.first =~ /<?dynarex /) \
+            and opt[:auto] then
         
           dx = Dynarex.new(debug: opt[:debug])
           dx.import contents
