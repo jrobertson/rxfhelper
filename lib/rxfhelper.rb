@@ -31,6 +31,10 @@ module RXFHelperModule
       filex.exists? filename
       
     end
+    
+    def self.exist?(filename)
+      exists? filename
+    end
 
     def self.filetype(x)
       
@@ -56,10 +60,13 @@ module RXFHelperModule
       end
     end
 
+    def self.cp(s, s2)    RXFHelper.cp(s, s2)      end                
     def self.mkdir(s)     RXFHelper.mkdir(s)       end
-    def self.mkdir_p(s)   RXFHelper.mkdir_p(s)     end            
+    def self.mkdir_p(s)   RXFHelper.mkdir_p(s)     end
+    def self.mv(s, s2)    RXFHelper.mv(s, s2)      end            
     def self.pwd()        RXFHelper.pwd()          end    
     def self.read(x)      RXFHelper.read(x).first  end
+    def self.rm(s)        RXFHelper.rm(s)          end
     def self.write(x, s)  RXFHelper.write(x, s)    end      
 
   end
@@ -80,6 +87,9 @@ end
 #
 class RXFHelper
   
+  def self.cp(s1, s2)
+    DfsFile.cp(s1, s2)
+  end
   
   def self.chdir(x)
     
@@ -122,6 +132,10 @@ class RXFHelper
     end
     
   end
+  
+  def self.mv(s1, s2)
+    DfsFile.mv(s1, s2)
+  end  
   
   def self.pwd()
     
@@ -200,6 +214,10 @@ class RXFHelper
 
       [x, :unknown]
     end
+  end
+  
+  def self.rm(filename)
+    DfsFile.rm filename
   end
   
   def self.write(location, s=nil)
