@@ -67,7 +67,8 @@ module RXFHelperModule
     def self.pwd()        RXFHelper.pwd()          end    
     def self.read(x)      RXFHelper.read(x).first  end
     def self.rm(s)        RXFHelper.rm(s)          end
-    def self.write(x, s)  RXFHelper.write(x, s)    end      
+    def self.write(x, s)  RXFHelper.write(x, s)    end
+    def self.zip(s, a)    RXFHelper.zip(s, a)    end
 
   end
 end
@@ -285,5 +286,9 @@ class RXFHelper
       [uri, :unknown]
     end
 
-  end  
+  end
+
+  def self.zip(filename, a)
+    DfsFile.zip(filename, a)
+  end    
 end
