@@ -88,6 +88,8 @@ end
 #
 class RXFHelper
   
+  @fs = :local
+  
   def self.cp(s1, s2)
     DfsFile.cp(s1, s2)
   end
@@ -95,8 +97,10 @@ class RXFHelper
   def self.chdir(x)
     
     if x[/^file:\/\//] or File.exists?(File.dirname(x)) then
+      @fs = :local
       FileUtils.chdir x
     elsif x[/^dfs:\/\//]
+      @fs = :dfs
       DfsFile.chdir x
     end
     
@@ -126,10 +130,10 @@ class RXFHelper
   
   def self.mkdir_p(x)
     
-    if x[/^file:\/\//] or File.exists?(File.dirname(x)) then
-      FileUtils.mkdir_p x
-    elsif x[/^dfs:\/\//]
+    if x[/^dfs:\/\//] or @fs == :dfs then
       DfsFile.mkdir_p x
+    else
+      FileUtils.mkdir_p x      
     end
     
   end
@@ -226,7 +230,7 @@ class RXFHelper
     case location
     when /^dfs:\/\//
       
-      DfsFile.write filename, s
+      DfsFile.write location, s
       
     when /^rse:\/\//
       
