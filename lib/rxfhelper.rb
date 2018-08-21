@@ -60,7 +60,8 @@ module RXFHelperModule
       end
     end
 
-    def self.cp(s, s2)    RXFHelper.cp(s, s2)      end                
+    def self.cp(s, s2)    RXFHelper.cp(s, s2)      end
+    def self.ls(s)        RXFHelper.ls(s)          end
     def self.mkdir(s)     RXFHelper.mkdir(s)       end
     def self.mkdir_p(s)   RXFHelper.mkdir_p(s)     end
     def self.mv(s, s2)    RXFHelper.mv(s, s2)      end            
@@ -116,7 +117,17 @@ class RXFHelper
       [x, :unknown]
     end
 
-  end    
+  end
+  
+  def self.ls(x='*')
+    
+    if x[/^file:\/\//] or File.exists?(File.dirname(x)) then
+      Dir[x]
+    elsif x[/^dfs:\/\//]
+      DfsFile.ls x
+    end    
+    
+  end
   
   def self.mkdir(x)
     
