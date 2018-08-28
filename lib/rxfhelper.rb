@@ -22,6 +22,9 @@ module RXFHelperModule
         File
       when :dfs
         DfsFile
+      when :sqlite
+        host = filename[/(?<=^sqlite:\/\/)[^\/]+/]
+        DRbObject.new nil, "druby://#{host}:57000"
       else
         nil
       end
@@ -46,7 +49,9 @@ module RXFHelperModule
       when /^https?:\/\//
         :http
       when /^dfs:\/\//
-        :dfs        
+        :dfs
+      when /^sqlite:\/\//
+        :sqlite
       when /^file:\/\//
         :file
       else
