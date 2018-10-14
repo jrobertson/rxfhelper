@@ -5,6 +5,7 @@
 require 'rsc'
 require 'gpd-request'
 require 'drb_fileclient'
+require 'remote_dwsregistry'
 
 
 module RXFHelperModule
@@ -166,7 +167,7 @@ class RXFHelper
   
   def self.read(x, h={})   
     
-    opt = {debug: false, auto: true}.merge(h)
+    opt = {debug: false, auto: false}.merge(h)
 
     puts 'x: ' + x.inspect if opt[:debug]
     raise RXFHelperException, 'nil found, expected a string' if x.nil?
@@ -209,11 +210,15 @@ class RXFHelper
         
         puts 'contents: ' + contents.inspect if opt[:debug]
         
-        obj = if (contents.lines.first =~ /<?dynarex /) \
-            and opt[:auto] then
-        
-          dx = Dynarex.new(debug: opt[:debug])
-          dx.import contents
+        obj = if opt[:auto] then
+
+          doctype = contents.lines.first[/(?<=^<\?)\w+/]
+          reg = RemoteDwsRegistry.new domain: 'reg', port: '9292'
+          r = reg.get_key 'hkey_gems/doctype/' + doctype
+          
+          return contents unless r
+
+          Object.const_get(r.text('class')).new.import contents
           
         else
           
