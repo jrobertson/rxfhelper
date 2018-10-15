@@ -3,7 +3,7 @@
 # file: rxfhelper.rb
 
 require 'rsc'
-require 'gpd-request'
+#require 'gpd-request'
 require 'drb_fileclient'
 require 'remote_dwsregistry'
 
@@ -208,7 +208,9 @@ class RXFHelper
         puts 'RXFHelper.read before File.read' if opt[:debug]
         contents = File.read(File.expand_path(x.sub(%r{^file://}, '')))
         
-        puts 'contents: ' + contents.inspect if opt[:debug]
+        puts 'contents2: ' + contents.inspect if opt[:debug]
+        
+        puts 'opt: ' + opt.inspect if opt[:debug]
         
         obj = if opt[:auto] then
 
@@ -216,9 +218,15 @@ class RXFHelper
           reg = RemoteDwsRegistry.new domain: 'reg', port: '9292'
           r = reg.get_key 'hkey_gems/doctype/' + doctype
           
+          puts 'r: '  + r.inspect if opt[:debug]
+          
           return contents unless r
 
-          Object.const_get(r.text('class')).new.import contents
+          require r.text('require')
+          
+          obj = Object.const_get(r.text('class')).new
+          obj.import contents
+          obj
           
         else
           
