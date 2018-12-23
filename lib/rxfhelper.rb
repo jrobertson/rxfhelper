@@ -94,6 +94,7 @@ end
 # Read XML File Helper
 #
 class RXFHelper
+  using ColouredText
   
   @fs = :local
   
@@ -159,6 +160,23 @@ class RXFHelper
     DfsFile.mv(s1, s2)
   end  
   
+  # used by self.read
+  #  
+  def self.objectize(contents)
+    
+    doctype = contents.lines.first[/(?<=^<\?)\w+/]
+    reg = RemoteDwsRegistry.new domain: 'reg', port: '9292'
+    r = reg.get_key 'hkey_gems/doctype/' + doctype
+        
+    return contents unless r
+
+    require r.text('require')
+    
+    obj = Object.const_get(r.text('class')).new
+    obj.import contents
+    obj    
+  end
+  
   def self.pwd()
     
     DfsFile.pwd
@@ -168,6 +186,8 @@ class RXFHelper
   def self.read(x, h={})   
     
     opt = {debug: false, auto: false}.merge(h)
+    
+    debug = opt[:debug]
 
     puts 'x: ' + x.inspect if opt[:debug]
     raise RXFHelperException, 'nil found, expected a string' if x.nil?
@@ -182,7 +202,11 @@ class RXFHelper
       
     elsif x.lines.length == 1 then
       
+      puts 'x.lines == 1'.info if debug
+      
       if x[/\bhttps?:\/\//] then
+        
+        puts 'before GPDRequest'.info if debug
         
         r = GPDRequest.new(opt[:username], opt[:password]).get(x)
         
@@ -193,7 +217,9 @@ class RXFHelper
           raise(RXFHelperException, "401 %s unauthorized access" % x)        
         end
         
-        [r.body, :url]
+        obj = opt[:auto] ? objectize(r.body) :   r.body
+        
+        [obj, :url]
         
       elsif  x[/^dfs:\/\//] then
         
@@ -212,27 +238,7 @@ class RXFHelper
         
         puts 'opt: ' + opt.inspect if opt[:debug]
         
-        obj = if opt[:auto] then
-
-          doctype = contents.lines.first[/(?<=^<\?)\w+/]
-          reg = RemoteDwsRegistry.new domain: 'reg', port: '9292'
-          r = reg.get_key 'hkey_gems/doctype/' + doctype
-          
-          puts 'r: '  + r.inspect if opt[:debug]
-          
-          return contents unless r
-
-          require r.text('require')
-          
-          obj = Object.const_get(r.text('class')).new
-          obj.import contents
-          obj
-          
-        else
-          
-          contents
-          
-        end
+        obj = opt[:auto] ? objectize(contents) :   contents
         
         [obj, :file]
         
