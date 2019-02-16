@@ -8,6 +8,9 @@ require 'drb_fileclient'
 require 'remote_dwsregistry'
 
 
+# Setup: Add a local DNS entry called *reg.lookup* if you are planning on 
+#        using the Registry feaure to look up objects automatically.
+
 module RXFHelperModule
   
   class FileX
@@ -165,7 +168,7 @@ class RXFHelper
   def self.objectize(contents)
     
     doctype = contents.lines.first[/(?<=^<\?)\w+/]
-    reg = RemoteDwsRegistry.new domain: 'reg', port: '9292'
+    reg = RemoteDwsRegistry.new domain: 'reg.lookup', port: '9292'
     r = reg.get_key 'hkey_gems/doctype/' + doctype
         
     return contents unless r
@@ -223,7 +226,8 @@ class RXFHelper
         
       elsif  x[/^dfs:\/\//] then
         
-        [DfsFile.read(x), :dfs]        
+        r = DfsFile.read(x)
+        [opt[:auto] ? objectize(r) : r, :dfs]        
                 
       elsif x[/^rse:\/\//] then
         
