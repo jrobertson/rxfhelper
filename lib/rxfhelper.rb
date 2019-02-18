@@ -17,6 +17,25 @@ module RXFHelperModule
 
     def self.chdir(s)  RXFHelper.chdir(s)   end
 
+    def self.directory?(filename)
+      
+      type = self.filetype(filename)
+      
+      filex = case type
+      when :file
+        File
+      when :dfs
+        DfsFile
+      else
+        nil
+      end
+
+      return nil unless filex
+      
+      filex.directory? filename
+      
+    end
+    
     def self.exists?(filename)
       
       type = self.filetype(filename)
