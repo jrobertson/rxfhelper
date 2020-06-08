@@ -6,6 +6,7 @@ require 'rsc'
 #require 'gpd-request'
 require 'drb_fileclient'
 require 'remote_dwsregistry'
+require 'drb_reg_client'
 
 
 # Setup: Add a local DNS entry called *reg.lookup* if you are planning on 
@@ -141,7 +142,13 @@ class RXFHelper
     raise RXFHelperException, 'nil found, expected a string' if x.nil?    
           
     if x[/^rse:\/\//] then
+      
       RSC.new.get x
+      
+    elsif x[/^reg:\/\//] then
+        
+      DRbRegClient.new.get(x).value.to_s
+      
     else
       [x, :unknown]
     end
@@ -252,6 +259,10 @@ class RXFHelper
         
          [RSC.new.get(x), :rse]
          
+      elsif x[/^reg:\/\//] then
+        
+         [DRbRegClient.new.get(x).value.to_s, :reg]
+         
       elsif x[/^file:\/\//] or File.exists?(x) then
         
         puts 'RXFHelper.read before File.read' if opt[:debug]
@@ -293,6 +304,10 @@ class RXFHelper
     when /^rse:\/\//
       
       RSC.new.post(location, s)
+
+    when /^reg:\/\//
+        
+      DRbRegClient.new.set(location, s)
       
     else
       
@@ -344,11 +359,32 @@ class RXFHelper
           
     if uri[/^rse:\/\//] then
       RSC.new.post uri, x
+      
+    elsif uri[/^reg:\/\//]
+        
+      DRbRegClient.new.set(uri, x)      
     else
       [uri, :unknown]
     end
 
   end
+  
+  def self.set(uri, x=nil)   
+
+    raise RXFHelperException, 'nil found, expected a string' if uri.nil?    
+    puts 'uri: ' + uri.inspect
+          
+    if uri[/^rse:\/\//] then
+      RSC.new.post uri, x
+      
+    elsif uri[/^reg:\/\//]
+        
+      DRbRegClient.new.set(uri, x)      
+    else
+      [uri, :unknown]
+    end
+
+  end  
 
   def self.zip(filename, a)
     DfsFile.zip(filename, a)
