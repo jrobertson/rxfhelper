@@ -121,6 +121,21 @@ class RXFHelper
   
   @fs = :local
   
+  def self.call(s)
+    
+    if s =~ /=/ then
+      
+      uri, val = s.split(/=/)
+      self.set uri, val
+      
+    else
+      
+      self.get s
+      
+    end
+    
+  end
+  
   def self.cp(s1, s2)
     DfsFile.cp(s1, s2)
   end
