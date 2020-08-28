@@ -162,7 +162,8 @@ class RXFHelper
       
     elsif x[/^reg:\/\//] then
         
-      DRbRegClient.new.get(x).value.to_s
+      r = DRbRegClient.new.get(x)
+      r.respond_to? :value ? r.value.to_s : r
       
     else
       [x, :unknown]
