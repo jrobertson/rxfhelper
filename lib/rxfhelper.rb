@@ -163,7 +163,7 @@ class RXFHelper
     elsif x[/^reg:\/\//] then
         
       r = DRbRegClient.new.get(x)
-      r.respond_to? :value ? r.value.to_s : r
+      r.respond_to?(:value) ? r.value.to_s : r
       
     else
       [x, :unknown]
@@ -277,7 +277,8 @@ class RXFHelper
          
       elsif x[/^reg:\/\//] then
         
-         [DRbRegClient.new.get(x).value.to_s, :reg]
+        r = DRbRegClient.new.get(x)        
+        [r.respond_to?(:value) ? r.value.to_s : r, :reg]
          
       elsif x[/^file:\/\//] or File.exists?(x) then
         
