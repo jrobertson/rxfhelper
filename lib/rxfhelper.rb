@@ -137,7 +137,26 @@ class RXFHelper
   end
   
   def self.cp(s1, s2)
-    DfsFile.cp(s1, s2)
+    
+    found = [s1,s2].grep /^\w+:\/\//
+    
+    if found then
+      
+      case found.first[/^\w+(?=:\/\/)/].to_sym
+
+      when :dfs
+        DfsFile.cp(s1, s2)
+      when :ftp
+        MyMediaFTP.cp s1, s2
+      else
+      
+      end 
+      
+    else
+      
+      FileUtils.cp s1, s2
+      
+    end
   end
   
   def self.chdir(x)
@@ -173,11 +192,18 @@ class RXFHelper
   
   def self.ls(x='*')
     
-    if x[/^file:\/\//] or File.exists?(File.dirname(x)) then
+    return Dir[x] if File.exists?(File.dirname(x))
+    
+    case filename[/^\w+(?=:\/\/)/].to_sym
+    when :file
       Dir[x]
-    elsif x[/^dfs:\/\//]
+    when :dfs
       DfsFile.ls x
-    end    
+    when :ftp
+      MyMediaFTP.ls x
+    else
+    
+    end       
     
   end
   
@@ -270,6 +296,10 @@ class RXFHelper
         
         r = DfsFile.read(x)
         [opt[:auto] ? objectize(r) : r, :dfs]        
+        
+      elsif  x[/^ftp:\/\//] then
+        
+        [MyMediaFTP.read(x), :ftp]                
                 
       elsif x[/^rse:\/\//] then
         
@@ -308,7 +338,16 @@ class RXFHelper
   end
   
   def self.rm(filename)
-    DfsFile.rm filename
+        
+    case filename[/^\w+(?=:\/\/)/].to_sym
+    when :dfs
+      DfsFile.rm filename
+    when :ftp
+      MyMediaFTP.rm filename      
+    else
+    
+    end    
+    
   end
   
   def self.write(location, s=nil)
