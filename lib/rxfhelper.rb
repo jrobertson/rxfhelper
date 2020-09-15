@@ -4,9 +4,11 @@
 
 require 'rsc'
 #require 'gpd-request'
+require 'mymedia_ftp'
 require 'drb_fileclient'
-require 'remote_dwsregistry'
 require 'drb_reg_client'
+require 'remote_dwsregistry'
+
 
 
 # Setup: Add a local DNS entry called *reg.lookup* if you are planning on 
