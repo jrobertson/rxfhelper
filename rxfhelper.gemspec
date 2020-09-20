@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'rxfhelper'
-  s.version = '1.1.1'
+  s.version = '1.1.2'
   s.summary = 'Helpful library for primarily reading the contents of a ' + 
       'file either from an HTTP address, local file, or DRb file system.'
   s.authors = ['James Robertson']

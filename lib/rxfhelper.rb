@@ -196,7 +196,7 @@ class RXFHelper
     
     return Dir[x] if File.exists?(File.dirname(x))
     
-    case filename[/^\w+(?=:\/\/)/].to_sym
+    case x[/^\w+(?=:\/\/)/].to_sym
     when :file
       Dir[x]
     when :dfs
@@ -277,7 +277,7 @@ class RXFHelper
       
       puts 'x.lines == 1'.info if debug
       
-      if x[/\bhttps?:\/\//] then
+      if x[/^https?:\/\//] then
         
         puts 'before GPDRequest'.info if debug
         
