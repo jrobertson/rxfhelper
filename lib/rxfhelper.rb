@@ -359,6 +359,10 @@ class RXFHelper
       
       DfsFile.write location, s
       
+    when  /^ftp:\/\// then
+        
+      MyMediaFTP.write location, s
+      
     when /^rse:\/\//
       
       RSC.new.post(location, s)
