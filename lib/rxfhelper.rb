@@ -314,7 +314,11 @@ class RXFHelper
 
         puts 'before GPDRequest'.info if debug
 
-        r = GPDRequest.new(opt[:username], opt[:password]).get(x)
+        r = if opt[:username] and opt[:password] then
+          GPDRequest.new(opt[:username], opt[:password]).get(x)
+        else
+          response = RestClient.get(x)
+        end
 
         case r.code
         when '404'
