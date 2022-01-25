@@ -4,6 +4,7 @@
 
 require 'rsc'
 #require 'gpd-request'
+require 'rest-client'
 require 'mymedia_ftp'
 require 'drb_fileclient'
 require 'drb_reg_client'
