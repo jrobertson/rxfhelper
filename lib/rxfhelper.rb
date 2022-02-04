@@ -12,7 +12,7 @@ require 'remote_dwsregistry'
 
 
 
-# Setup: Add a local DNS entry called *reg.lookup* if you are planning on 
+# Setup: Add a local DNS entry called *reg.lookup* if you are planning on
 #        using the Registry feaure to look up objects automatically.
 
 module RXFHelperModule
@@ -162,11 +162,14 @@ class RXFHelper
 
   end
 
-  def self.cp(s1, s2)
+  def self.cp(s1, s2, debug: false)
+
+    puts 'inside RXFHelper.cp' if debug
 
     found = [s1,s2].grep /^\w+:\/\//
+    puts 'found: ' + found.inspect if debug
 
-    if found then
+    if found.any? then
 
       case found.first[/^\w+(?=:\/\/)/].to_sym
 
