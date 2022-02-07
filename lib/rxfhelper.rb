@@ -110,6 +110,7 @@ module RXFHelperModule
     def self.pwd()         RXFHelper.pwd()          end
     def self.read(x)       RXFHelper.read(x).first  end
     def self.rm(s)         RXFHelper.rm(s)          end
+    def self.touch(s)      RXFHelper.touch(s)       end
     def self.write(x, s)   RXFHelper.write(x, s)    end
     def self.zip(s, a)     RXFHelper.zip(s, a)      end
 
@@ -154,7 +155,7 @@ class RXFHelper
     return unless permissions.is_a? Integer
     return unless s.is_a? String
 
-    if s[/^dfs:\/\//] or @fs == :dfs then
+    if s[/^dfs:\/\//] or @fs[0..2] == 'dfs' then
       DfsFile.chmod permissions, s
     else
       FileUtils.chmod permissions, s
@@ -171,11 +172,11 @@ class RXFHelper
 
     if found.any? then
 
-      case found.first[/^\w+(?=:\/\/)/].to_sym
+      case found.first[/^\w+(?=:\/\/)/]
 
-      when :dfs
+      when 'dfs'
         DfsFile.cp(s1, s2)
-      when :ftp
+      when 'ftp'
         MyMediaFTP.cp s1, s2
       else
 
@@ -190,12 +191,22 @@ class RXFHelper
 
   def self.chdir(x)
 
+    # We can use @fs within chdir() to flag the current file system.
+    # Allowing us to use relative paths with FileX operations instead
+    # of explicitly stating the path each time. e.g. touch 'foo.txt'
+    #
+
     if x[/^file:\/\//] or File.exists?(File.dirname(x)) then
+
       @fs = :local
       FileUtils.chdir x
+
     elsif x[/^dfs:\/\//]
-      @fs = :dfs
+
+      host = x[/(?<=dfs:\/\/)[^\/]+/]
+      @fs = 'dfs://' + host
       DfsFile.chdir x
+
     end
 
   end
@@ -233,12 +244,12 @@ class RXFHelper
 
     return Dir[x] if File.exists?(File.dirname(x))
 
-    case x[/^\w+(?=:\/\/)/].to_sym
-    when :file
+    case x[/^\w+(?=:\/\/)/]
+    when 'file'
       Dir[x]
-    when :dfs
+    when 'dfs'
       DfsFile.ls x
-    when :ftp
+    when 'ftp'
       MyMediaFTP.ls x
     else
 
@@ -258,7 +269,7 @@ class RXFHelper
 
   def self.mkdir_p(x)
 
-    if x[/^dfs:\/\//] or @fs == :dfs then
+    if x[/^dfs:\/\//] or @fs[0..2] == 'dfs' then
       DfsFile.mkdir_p x
     else
       FileUtils.mkdir_p x
@@ -382,13 +393,30 @@ class RXFHelper
 
   def self.rm(filename)
 
-    case filename[/^\w+(?=:\/\/)/].to_sym
-    when :dfs
+    case filename[/^\w+(?=:\/\/)/]
+    when 'dfs'
       DfsFile.rm filename
-    when :ftp
+    when 'ftp'
       MyMediaFTP.rm filename
     else
+      FileUtils.rm
+    end
 
+  end
+
+  def self.touch(filename)
+
+    if @fs[0..2] == 'dfs' then
+      return DfsFile.touch(@fs + pwd + '/' + filename)
+    end
+
+    case filename[/^\w+(?=:\/\/)/]
+    when 'dfs'
+      DfsFile.touch filename
+    when 'ftp'
+      MyMediaFTP.touch filename
+    else
+      FileUtils.touch filename
     end
 
   end
