@@ -110,7 +110,11 @@ module RXFHelperModule
     def self.pwd()         RXFHelper.pwd()          end
     def self.read(x)       RXFHelper.read(x).first  end
     def self.rm(s)         RXFHelper.rm(s)          end
-    def self.touch(s)      RXFHelper.touch(s)       end
+
+    def self.touch(s, mtime: Time.now)
+      RXFHelper.touch(s, mtime: mtime)
+    end
+
     def self.write(x, s)   RXFHelper.write(x, s)    end
     def self.zip(s, a)     RXFHelper.zip(s, a)      end
 
@@ -404,19 +408,19 @@ class RXFHelper
 
   end
 
-  def self.touch(filename)
+  def self.touch(filename, mtime: Time.now)
 
     if @fs[0..2] == 'dfs' then
-      return DfsFile.touch(@fs + pwd + '/' + filename)
+      return DfsFile.touch(@fs + pwd + '/' + filename, mtime: mtime)
     end
 
     case filename[/^\w+(?=:\/\/)/]
     when 'dfs'
-      DfsFile.touch filename
-    when 'ftp'
-      MyMediaFTP.touch filename
+      DfsFile.touch filename, mtime: mtime
+    #when 'ftp'
+    #  MyMediaFTP.touch filename
     else
-      FileUtils.touch filename
+      FileUtils.touch filename, mtime: mtime
     end
 
   end
