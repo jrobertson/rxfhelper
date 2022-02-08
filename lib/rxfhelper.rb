@@ -403,7 +403,13 @@ class RXFHelper
     when 'ftp'
       MyMediaFTP.rm filename
     else
-      FileUtils.rm
+
+      if File.basename(filename) =~ /\*/ then
+        Dir.glob(filename).each {|file| FileUtils.rm file }
+      else
+        FileUtils.rm filename
+      end
+
     end
 
   end
