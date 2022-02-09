@@ -111,6 +111,10 @@ module RXFHelperModule
     def self.read(x)       RXFHelper.read(x).first  end
     def self.rm(s)         RXFHelper.rm(s)          end
 
+    def self.rm_r(s, force: false)
+      RXFHelper.rm_r(s, force: force)
+    end
+
     def self.touch(s, mtime: Time.now)
       RXFHelper.touch(s, mtime: mtime)
     end
@@ -405,9 +409,48 @@ class RXFHelper
     else
 
       if File.basename(filename) =~ /\*/ then
-        Dir.glob(filename).each {|file| FileUtils.rm file }
+
+        Dir.glob(filename).each do |file|
+
+          begin
+            FileUtils.rm file
+          rescue
+            puts ('RXFHelper#rm: ' + file + ' is a Directory').warning
+          end
+
+        end
+
       else
         FileUtils.rm filename
+      end
+
+    end
+
+  end
+
+  def self.rm_r(filename, force: false)
+
+    case filename[/^\w+(?=:\/\/)/]
+    when 'dfs'
+      DfsFile.rm_r filename, force: force
+    #when 'ftp'
+    #  MyMediaFTP.rm filename
+    else
+
+      if File.basename(filename) =~ /\*/ then
+
+        Dir.glob(filename).each do |file|
+
+          begin
+            FileUtils.rm_r file, force: force
+          rescue
+            puts ('RXFHelper#rm: ' + file + ' is a Directory').warning
+          end
+
+        end
+
+      else
+        FileUtils.rm_r filename, force: force
       end
 
     end
