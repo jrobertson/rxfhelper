@@ -9,6 +9,7 @@ require 'mymedia_ftp'
 require 'drb_fileclient'
 require 'drb_reg_client'
 require 'remote_dwsregistry'
+require 'dir-to-xml'
 
 
 
@@ -114,6 +115,9 @@ module RXFHelperModule
     def self.rm_r(s, force: false)
       RXFHelper.rm_r(s, force: force)
     end
+
+    def self.ru(s)         RXFHelper.ru(s)          end
+    def self.ru_r(s)       RXFHelper.ru_r(s)        end
 
     def self.touch(s, mtime: Time.now)
       RXFHelper.touch(s, mtime: mtime)
@@ -452,6 +456,38 @@ class RXFHelper
       else
         FileUtils.rm_r filename, force: force
       end
+
+    end
+
+  end
+
+  # recently_updated
+  #
+  def self.ru(path='.')
+
+    case path[/^\w+(?=:\/\/)/]
+    when 'dfs'
+      DfsFile.ru path
+
+    else
+
+      DirToXML.new(path, recursive: false, verbose: false).latest
+
+    end
+
+  end
+
+  # recently updated recursively check directories
+  #
+  def self.ru_r(path='.')
+
+    case path[/^\w+(?=:\/\/)/]
+    when 'dfs'
+      DfsFile.ru_r path
+
+    else
+
+      DirToXML.new(path, recursive: true, verbose: false).latest
 
     end
 
