@@ -6,10 +6,12 @@ require 'rsc'
 #require 'gpd-request'
 require 'rest-client'
 require 'mymedia_ftp'
-require 'drb_fileclient'
 require 'drb_reg_client'
 require 'remote_dwsregistry'
-require 'dir-to-xml'
+# Commented the following out to resolve the *uninitialized constant
+#                                             Kvx::RXFHelperModule (NameError)*
+#require 'drb_fileclient'
+#require 'dir-to-xml'
 
 
 
