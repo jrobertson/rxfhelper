@@ -3,15 +3,9 @@
 # file: rxfhelper.rb
 
 require 'rsc'
-#require 'gpd-request'
-require 'rest-client'
-require 'mymedia_ftp'
 require 'drb_reg_client'
 require 'remote_dwsregistry'
-# Commented the following out to resolve the *uninitialized constant
-#                                             Kvx::RXFHelperModule (NameError)*
-#require 'drb_fileclient'
-#require 'dir-to-xml'
+require 'rxfileio'
 
 
 
@@ -19,135 +13,79 @@ require 'remote_dwsregistry'
 #        using the Registry feaure to look up objects automatically.
 
 module RXFHelperModule
+  include RXFileIOModule
 
-  class DirX
 
-    def self.chdir(s)  RXFHelper.chdir(s)   end
-    def self.glob(s)   RXFHelper.glob(s)    end
-    def self.mkdir(s)  RXFHelper.mkdir(s)   end
-    def self.pwd()     RXFHelper.pwd()      end
+  def FileX.exists?(filename)
+
+    type = FileX.filetype(filename)
+
+    filex = case type
+    when :file
+      File
+    when :dfs
+      DfsFile
+    when :sqlite
+      host = filename[/(?<=^sqlite:\/\/)[^\/]+/]
+      DRbObject.new nil, "druby://#{host}:57000"
+    else
+      nil
+    end
+
+    return nil unless filex
+
+    filex.exists? filename
 
   end
 
-  class FileX
 
-    def self.chdir(s)  RXFHelper.chdir(s)   end
+  def FileX.filetype(x)
 
-    def self.directory?(filename)
+    return :string if x.lines.length > 1
 
-      type = self.filetype(filename)
+    case x
+    when /^rse:\/\//
+      :rse
+    when /^https?:\/\//
+      :http
+    when /^dfs:\/\//
+      :dfs
+    when /^sqlite:\/\//
+      :sqlite
+    when /^file:\/\//
+      :file
+    else
 
-      filex = case type
-      when :file
-        File
-      when :dfs
-        DfsFile
-      else
-        nil
-      end
-
-      return nil unless filex
-
-      filex.directory? filename
-
-    end
-
-    def self.exists?(filename)
-
-      type = self.filetype(filename)
-
-      filex = case type
-      when :file
-        File
-      when :dfs
-        DfsFile
-      when :sqlite
-        host = filename[/(?<=^sqlite:\/\/)[^\/]+/]
-        DRbObject.new nil, "druby://#{host}:57000"
-      else
-        nil
-      end
-
-      return nil unless filex
-
-      filex.exists? filename
-
-    end
-
-    def self.exist?(filename)
-      exists? filename
-    end
-
-    def self.filetype(x)
-
-      return :string if x.lines.length > 1
-
-      case x
-      when /^rse:\/\//
-        :rse
-      when /^https?:\/\//
-        :http
-      when /^dfs:\/\//
-        :dfs
-      when /^sqlite:\/\//
-        :sqlite
-      when /^file:\/\//
+      if File.exists?(x) then
         :file
       else
-
-        if File.exists?(x) then
-          :file
-        else
-          :text
-        end
-
+        :text
       end
+
     end
-
-    def self.chmod(num, s) RXFHelper.chmod(num, s)     end
-    def self.cp(s, s2)     RXFHelper.cp(s, s2)      end
-    def self.ls(s)         RXFHelper.ls(s)          end
-    def self.mkdir(s)      RXFHelper.mkdir(s)       end
-    def self.mkdir_p(s)    RXFHelper.mkdir_p(s)     end
-    def self.mv(s, s2)     RXFHelper.mv(s, s2)      end
-    def self.pwd()         RXFHelper.pwd()          end
-    def self.read(x)       RXFHelper.read(x).first  end
-    def self.rm(s)         RXFHelper.rm(s)          end
-
-    def self.rm_r(s, force: false)
-      RXFHelper.rm_r(s, force: force)
-    end
-
-    def self.ru(s)         RXFHelper.ru(s)          end
-    def self.ru_r(s)       RXFHelper.ru_r(s)        end
-
-    def self.touch(s, mtime: Time.now)
-      RXFHelper.touch(s, mtime: mtime)
-    end
-
-    def self.write(x, s)   RXFHelper.write(x, s)    end
-    def self.zip(s, a)     RXFHelper.zip(s, a)      end
-
   end
+
 end
 
+=begin
+  # 20th February 2022 # JR
+  # the following code has been commented out because it appears to be redundant
 class URL
 
   def self.join(*a)
     a.map {|x| x.sub(/(?:^\/|\/$)/,'') }.join '/'
   end
 end
-
+=end
 
 class RXFHelperException < Exception
 end
 
 # Read XML File Helper
 #
-class RXFHelper
+class RXFHelper < RXFileIO
   using ColouredText
 
-  @fs = :local
 
   def self.call(s)
 
@@ -164,66 +102,6 @@ class RXFHelper
 
   end
 
-  def self.chmod(permissions, s)
-
-    return unless permissions.is_a? Integer
-    return unless s.is_a? String
-
-    if s[/^dfs:\/\//] or @fs[0..2] == 'dfs' then
-      DfsFile.chmod permissions, s
-    else
-      FileUtils.chmod permissions, s
-    end
-
-  end
-
-  def self.cp(s1, s2, debug: false)
-
-    puts 'inside RXFHelper.cp' if debug
-
-    found = [s1,s2].grep /^\w+:\/\//
-    puts 'found: ' + found.inspect if debug
-
-    if found.any? then
-
-      case found.first[/^\w+(?=:\/\/)/]
-
-      when 'dfs'
-        DfsFile.cp(s1, s2)
-      when 'ftp'
-        MyMediaFTP.cp s1, s2
-      else
-
-      end
-
-    else
-
-      FileUtils.cp s1, s2
-
-    end
-  end
-
-  def self.chdir(x)
-
-    # We can use @fs within chdir() to flag the current file system.
-    # Allowing us to use relative paths with FileX operations instead
-    # of explicitly stating the path each time. e.g. touch 'foo.txt'
-    #
-
-    if x[/^file:\/\//] or File.exists?(File.dirname(x)) then
-
-      @fs = :local
-      FileUtils.chdir x
-
-    elsif x[/^dfs:\/\//]
-
-      host = x[/(?<=dfs:\/\/)[^\/]+/]
-      @fs = 'dfs://' + host
-      DfsFile.chdir x
-
-    end
-
-  end
 
   def self.get(x)
 
@@ -244,57 +122,6 @@ class RXFHelper
 
   end
 
-  def self.glob(s)
-
-    if s[/^dfs:\/\//] then
-      DfsFile.glob(s)
-    else
-      Dir.glob(s)
-    end
-
-  end
-
-  def self.ls(x='*')
-
-    return Dir[x] if File.exists?(File.dirname(x))
-
-    case x[/^\w+(?=:\/\/)/]
-    when 'file'
-      Dir[x]
-    when 'dfs'
-      DfsFile.ls x
-    when 'ftp'
-      MyMediaFTP.ls x
-    else
-
-    end
-
-  end
-
-  def self.mkdir(x)
-
-    if x[/^file:\/\//] or File.exists?(File.dirname(x)) then
-      FileUtils.mkdir x
-    elsif x[/^dfs:\/\//]
-      DfsFile.mkdir x
-    end
-
-  end
-
-  def self.mkdir_p(x)
-
-    if x[/^dfs:\/\//] or @fs[0..2] == 'dfs' then
-      DfsFile.mkdir_p x
-    else
-      FileUtils.mkdir_p x
-    end
-
-  end
-
-  def self.mv(s1, s2)
-    DfsFile.mv(s1, s2)
-  end
-
   # used by self.read
   #
   def self.objectize(contents)
@@ -312,11 +139,6 @@ class RXFHelper
     obj
   end
 
-  def self.pwd()
-
-    DfsFile.pwd
-
-  end
 
   def self.read(x, h={})
 
@@ -362,7 +184,7 @@ class RXFHelper
 
       elsif  x[/^dfs:\/\//] then
 
-        r = DfsFile.read(x)
+        r = DfsFile.read(x).force_encoding('UTF-8')
         [opt[:auto] ? objectize(r) : r, :dfs]
 
       elsif  x[/^ftp:\/\//] then
@@ -394,7 +216,7 @@ class RXFHelper
       elsif x =~ /\s/
         [x, :text]
       elsif DfsFile.exists?(x)
-        [DfsFile.read(x), :dfs]
+        [DfsFile.read(x).force_encoding('UTF-8'), :dfs]
       else
         [x, :unknown]
       end
@@ -403,113 +225,6 @@ class RXFHelper
 
       [x, :unknown]
     end
-  end
-
-  def self.rm(filename)
-
-    case filename[/^\w+(?=:\/\/)/]
-    when 'dfs'
-      DfsFile.rm filename
-    when 'ftp'
-      MyMediaFTP.rm filename
-    else
-
-      if File.basename(filename) =~ /\*/ then
-
-        Dir.glob(filename).each do |file|
-
-          begin
-            FileUtils.rm file
-          rescue
-            puts ('RXFHelper#rm: ' + file + ' is a Directory').warning
-          end
-
-        end
-
-      else
-        FileUtils.rm filename
-      end
-
-    end
-
-  end
-
-  def self.rm_r(filename, force: false)
-
-    case filename[/^\w+(?=:\/\/)/]
-    when 'dfs'
-      DfsFile.rm_r filename, force: force
-    #when 'ftp'
-    #  MyMediaFTP.rm filename
-    else
-
-      if File.basename(filename) =~ /\*/ then
-
-        Dir.glob(filename).each do |file|
-
-          begin
-            FileUtils.rm_r file, force: force
-          rescue
-            puts ('RXFHelper#rm: ' + file + ' is a Directory').warning
-          end
-
-        end
-
-      else
-        FileUtils.rm_r filename, force: force
-      end
-
-    end
-
-  end
-
-  # recently_updated
-  #
-  def self.ru(path='.')
-
-    case path[/^\w+(?=:\/\/)/]
-    when 'dfs'
-      DfsFile.ru path
-
-    else
-
-      DirToXML.new(path, recursive: false, verbose: false).latest
-
-    end
-
-  end
-
-  # recently updated recursively check directories
-  #
-  def self.ru_r(path='.')
-
-    case path[/^\w+(?=:\/\/)/]
-    when 'dfs'
-      DfsFile.ru_r path
-
-    else
-
-      DirToXML.new(path, recursive: true, verbose: false).latest
-
-    end
-
-  end
-
-  def self.touch(filename, mtime: Time.now)
-
-    if @fs[0..2] == 'dfs' then
-      return DfsFile.touch(@fs + pwd + '/' + filename, mtime: mtime)
-    end
-
-    case filename[/^\w+(?=:\/\/)/]
-    when 'dfs'
-      DfsFile.touch filename, mtime: mtime
-    #when 'ftp'
-    #  MyMediaFTP.touch filename
-    else
-      FileUtils.touch filename, mtime: mtime
-    end
-
   end
 
   def self.write(location, s=nil)
@@ -543,22 +258,9 @@ class RXFHelper
 
   end
 
-  def self.writeable?(source)
-
-    return false if source.lines.length > 1
-
-    if not source =~ /:\/\// then
-
-      return true if File.exists? source
-
-    else
-
-      return true if source =~ /^dfs:/
-
-    end
-
-    return false
-  end
+=begin
+  # 20th February 2022 # JR
+  # the following code has been commented out because it appears to be redundant
 
   def self.absolute_url(page_url, item_location)
 
@@ -574,6 +276,7 @@ class RXFHelper
         File.join page_url[/.*\//], item_location
     end
   end
+=end
 
   def self.post(uri, x=nil)
 
@@ -608,7 +311,4 @@ class RXFHelper
 
   end
 
-  def self.zip(filename, a)
-    DfsFile.zip(filename, a)
-  end
 end
