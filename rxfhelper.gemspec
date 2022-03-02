@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'rxfhelper'
-  s.version = '1.4.0'
+  s.version = '1.4.1'
   s.summary = 'Helpful library for primarily reading the contents of a ' + 
       'file either from an HTTP address, local file, or DRb file system.'
   s.authors = ['James Robertson']
@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('rsc', '~> 0.4', '>=0.4.5')
   s.add_runtime_dependency('remote_dwsregistry', '~> 0.4', '>=0.4.1')
   s.add_runtime_dependency('drb_reg_client', '~> 0.2', '>=0.2.0')
-  s.add_runtime_dependency('rxfileio', '~> 0.2', '>=0.2.0')
+  s.add_runtime_dependency('rxfileio', '~> 0.2', '>=0.2.2')
   s.signing_key = '../privatekeys/rxfhelper.pem'
   s.cert_chain  = ['gem-public_cert.pem']
   s.license = 'MIT'

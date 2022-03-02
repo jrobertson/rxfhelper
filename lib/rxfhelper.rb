@@ -15,55 +15,8 @@ require 'rxfileio'
 module RXFHelperModule
   include RXFileIOModule
 
-
-  def FileX.exists?(filename)
-
-    type = FileX.filetype(filename)
-
-    filex = case type
-    when :file
-      File
-    when :dfs
-      DfsFile
-    when :sqlite
-      host = filename[/(?<=^sqlite:\/\/)[^\/]+/]
-      DRbObject.new nil, "druby://#{host}:57000"
-    else
-      nil
-    end
-
-    return nil unless filex
-
-    filex.exists? filename
-
-  end
-
-
-  def FileX.filetype(x)
-
-    return :string if x.lines.length > 1
-
-    case x
-    when /^rse:\/\//
-      :rse
-    when /^https?:\/\//
-      :http
-    when /^dfs:\/\//
-      :dfs
-    when /^sqlite:\/\//
-      :sqlite
-    when /^file:\/\//
-      :file
-    else
-
-      if File.exists?(x) then
-        :file
-      else
-        :text
-      end
-
-    end
-  end
+  def FileX.exists?(s)  RXFHelper.exists?(s)   end
+  def FileX.filetype(x) RXFHelper.filetype(s)  end
 
 end
 
@@ -100,6 +53,54 @@ class RXFHelper < RXFileIO
 
     end
 
+  end
+
+  def self.exists?(filename)
+
+    type = self.filetype(filename)
+
+    filex = case type
+    when :file
+      File
+    when :dfs
+      DfsFile
+    when :sqlite
+      host = filename[/(?<=^sqlite:\/\/)[^\/]+/]
+      DRbObject.new nil, "druby://#{host}:57000"
+    else
+      nil
+    end
+
+    return nil unless filex
+
+    filex.exists? filename
+
+  end
+
+  def self.filetype(x)
+
+    return :string if x.lines.length > 1
+
+    case x
+    when /^rse:\/\//
+      :rse
+    when /^https?:\/\//
+      :http
+    when /^dfs:\/\//
+      :dfs
+    when /^sqlite:\/\//
+      :sqlite
+    when /^file:\/\//
+      :file
+    else
+
+      if File.exists?(x) then
+        :file
+      else
+        :text
+      end
+
+    end
   end
 
 
