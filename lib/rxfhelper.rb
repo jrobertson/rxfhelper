@@ -3,6 +3,7 @@
 # file: rxfhelper.rb
 
 require 'rsc'
+require 'sps-pub'
 require 'drb_reg_client'
 require 'remote_dwsregistry'
 require 'rxfileio'
@@ -40,12 +41,19 @@ class RXFHelper < RXFileIO
   using ColouredText
 
 
-  def self.call(s)
+  def self.call(s, val)
 
-    if s =~ /=/ then
+    if val then
+
+      name = s =~ /^sps:/ ? :pub : :set
+      self.method(name).call(s, val)
+
+    elsif s =~ /=/
 
       uri, val = s.split(/=/)
       self.set uri, val
+
+    els
 
     else
 
@@ -140,6 +148,13 @@ class RXFHelper < RXFileIO
     obj
   end
 
+  def self.pub(s, value)
+
+    r = s.match(/(?<=sps:\/\/)(?<host>[^\/:]+):?(?<port>\d+)?\/(?<topic>.*)/)
+    SPSPub.notice "%s: %s" % [r[:topic], value], host: r[:host],
+        port: r[:port] || '59000'
+
+  end
 
   def self.read(x, h={})
 
