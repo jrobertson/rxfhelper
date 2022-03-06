@@ -41,7 +41,7 @@ class RXFHelper < RXFileIO
   using ColouredText
 
 
-  def self.call(s, val)
+  def self.call(s, val=nil)
 
     if val then
 
