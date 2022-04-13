@@ -17,7 +17,8 @@ module RXFHelperModule
   include RXFileIOModule
 
   def FileX.exists?(s)  RXFHelper.exists?(s)   end
-  def FileX.filetype(x) RXFHelper.filetype(s)  end
+  def FileX.filetype(s) RXFHelper.filetype(s)  end
+  def FileX.read(s)     RXFHelper.read(s)[0]   end
 
 end
 
@@ -52,8 +53,6 @@ class RXFHelper < RXFileIO
 
       uri, val = s.split(/=/)
       self.set uri, val
-
-    els
 
     else
 
