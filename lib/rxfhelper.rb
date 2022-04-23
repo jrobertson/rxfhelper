@@ -7,6 +7,7 @@ require 'sps-pub'
 require 'drb_reg_client'
 require 'remote_dwsregistry'
 require 'rxfileio'
+require 'onedrb'
 
 
 
@@ -43,6 +44,16 @@ class RXFHelper < RXFileIO
 
 
   def self.call(s, val=nil)
+
+    if s.start_with? 'odrb' then
+
+      if s =~ /^odrb:\/\/[^:]+:\d+/ then
+        return OneDrb::Client.call(s)
+      else
+        return OneDrb::Client.call(s, port: '57844')
+      end
+
+    end
 
     if val then
 
