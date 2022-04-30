@@ -146,6 +146,13 @@ class RXFHelper < RXFileIO
   def self.objectize(contents)
 
     doctype = contents.lines.first[/(?<=^<\?)\w+/]
+
+    if doctype == 'xml' then
+      doc = Rexle.new(contents)
+      e = doc.root.element('summary/recordx_type')
+      doctype = e.text.to_s if e
+    end
+
     reg = RemoteDwsRegistry.new domain: 'reg.lookup', port: '9292'
     r = reg.get_key 'hkey_gems/doctype/' + doctype
 
