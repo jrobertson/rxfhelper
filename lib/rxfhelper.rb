@@ -146,6 +146,7 @@ class RXFHelper < RXFileIO
   def self.objectize(contents)
 
     doctype = contents.lines.first[/(?<=^<\?)\w+/]
+    return contents unless doctype
 
     if doctype == 'xml' then
       doc = Rexle.new(contents)
