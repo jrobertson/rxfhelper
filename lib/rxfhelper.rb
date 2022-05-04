@@ -212,6 +212,7 @@ class RXFHelper < RXFileIO
           raise(RXFHelperException, "401 %s unauthorized access" % x)
         end
 
+        return [r.body, :url] if File.extname(x) == '.html'
         obj = opt[:auto] ? objectize(r.body) :   r.body
 
         [obj, :url]
