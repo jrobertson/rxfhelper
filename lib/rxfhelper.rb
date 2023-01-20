@@ -17,6 +17,7 @@ require 'onedrb'
 module RXFHelperModule
   include RXFileIOModule
 
+  def FileX.exist?(s)   RXFHelper.exist?(s)    end  
   def FileX.exists?(s)  RXFHelper.exists?(s)   end
   def FileX.filetype(s) RXFHelper.filetype(s)  end
   def FileX.read(s)     RXFHelper.read(s)[0]   end
@@ -73,7 +74,7 @@ class RXFHelper < RXFileIO
 
   end
 
-  def self.exists?(filename)
+  def self.exist?(filename)
 
     type = self.filetype(filename)
 
@@ -91,9 +92,13 @@ class RXFHelper < RXFileIO
 
     return nil unless filex
 
-    filex.exists? filename
+    filex.exist? filename
 
   end
+  
+  def self.exists?(filename)
+    self.exist?(filename)
+  end  
 
   def self.filetype(x)
 
@@ -112,7 +117,7 @@ class RXFHelper < RXFileIO
       :file
     else
 
-      if File.exists?(x) then
+      if File.exist?(x) then
         :file
       else
         :text
@@ -235,7 +240,7 @@ class RXFHelper < RXFileIO
         r = DRbRegClient.new.get(x)
         [r.is_a?(Rexle::Element::Value) ? r.to_s : r, :reg]
 
-      elsif x[/^file:\/\//] or File.exists?(x) then
+      elsif x[/^file:\/\//] or File.exist?(x) then
 
         puts 'RXFHelper.read before File.read' if opt[:debug]
         contents = File.read(File.expand_path(x.sub(%r{^file://}, '')))
